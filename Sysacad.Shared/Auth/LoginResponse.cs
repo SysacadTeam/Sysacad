@@ -1,4 +1,4 @@
-namespace Sysacad.Shared
+namespace Sysacad.Shared.Auth
 {
     /// <summary>
     /// Modelo de respuesta de login

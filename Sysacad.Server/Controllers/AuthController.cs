@@ -4,6 +4,7 @@ using Sysacad.Server.Data;
 using Sysacad.Shared;
 using Sysacad.Server.Services;
 using System.IdentityModel.Tokens.Jwt;
+using Sysacad.Shared.Auth;
 
 namespace Sysacad.Server.Controllers
 {
