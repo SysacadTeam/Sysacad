@@ -1,10 +1,17 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Sysacad.Client.Components;
+using Sysacad.Client.Services;
+using Sysacad.Client.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<AuthenticationStateProvider, SysacadAuthStateProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
 
 var app = builder.Build();
 

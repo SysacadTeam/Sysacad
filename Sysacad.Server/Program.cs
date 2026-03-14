@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
-using Sysacad.Server.Configuration;
 using Sysacad.Server.Data;
 using Sysacad.Server.Data.Extensions;
 using Sysacad.Server.Middleware;
@@ -12,8 +11,6 @@ using Sysacad.Server.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
-
-ENV_SETUP.SetEnvironmentVariables();
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
