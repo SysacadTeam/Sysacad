@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="Sysacad.Client/Sysacad.Client.csproj" />
+  <Project Path="Sysacad.Client/Sysacad.Client.csproj" Id="99f0759a-7ea0-4bed-b1e9-ba454d34e53e" />
   <Project Path="Sysacad.Server/Sysacad.Server.csproj" />
   <Project Path="Sysacad.Shared/Sysacad.Shared.csproj" />
 </Solution>
