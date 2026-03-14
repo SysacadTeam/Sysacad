@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+	<TargetFramework>net10.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<UserSecretsId>f05627b5-4187-46b5-83d5-3ac30e3e1937</UserSecretsId>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	<AnalysisLevel>latest</AnalysisLevel>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove=".template.config\**" />
+    <Compile Remove="Scripts\**" />
+    <Content Remove=".template.config\**" />
+    <Content Remove="Scripts\**" />
+    <EmbeddedResource Remove=".template.config\**" />
+    <EmbeddedResource Remove="Scripts\**" />
+    <None Remove=".template.config\**" />
+    <None Remove="Scripts\**" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.12.11" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Sysacad.Shared\Sysacad.Shared.csproj" />
+	</ItemGroup>
+
+	</Project>

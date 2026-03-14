@@ -1,0 +1,20 @@
+# Carpetas de compilación
+bin/
+obj/
+
+# Archivos de usuario y configuración local
+*.user
+*.suo
+*.cache
+
+# Carpetas de Docker
+**/Dockerfile*
+**/docker-compose*
+
+# Git
+.git/
+.gitignore
+
+# Otros
+*.md
+LICENSE

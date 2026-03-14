@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Sysacad.Server/Sysacad.Server.csproj" />
+  <Project Path="Sysacad.Shared/Sysacad.Shared.csproj" />
+</Solution>
