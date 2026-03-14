@@ -1,0 +1,25 @@
+services:
+  sysacad:
+    image: ${DOCKER_IMAGE:-sysacad:latest}
+    container_name: sysacad_app
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_CERTIFICATE_PATH=/certs/db.pem
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    volumes:
+      - ${DB_CERTIFICATE_PATH}:/certs/db.pem:ro
+    networks:
+      - sysacad_net
+
+networks:
+  sysacad_net:
+    driver: bridge

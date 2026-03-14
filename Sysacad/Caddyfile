@@ -1,0 +1,3 @@
+sysacad.agigena.com {
+    reverse_proxy sysacad:8080
+}
