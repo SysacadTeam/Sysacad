@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /Sysacad.Server/appsettings.Development.json
 /Sysacad.Server/appsettings.json
+/Sysacad.Client/appsettings.json
+/Sysacad.Client/appsettings.Development.json
