@@ -59,23 +59,31 @@ namespace Sysacad.Client.Services
 
         private async Task<ClaimsPrincipal?> BuildPrincipalFromCookieAsync()
         {
-            var token = await _cookieService.GetCookieAsync<string>(AuthService.TokenCookieName);
-            if (string.IsNullOrWhiteSpace(token))
+            try
             {
-                _httpClient.DefaultRequestHeaders.Authorization = null;
+                var token = await _cookieService.GetCookieAsync<string>(AuthService.TokenCookieName);
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = null;
+                    return null;
+                }
+
+                var principal = TryCreatePrincipal(token);
+                if (principal == null)
+                {
+                    await _cookieService.DeleteCookieAsync(AuthService.TokenCookieName);
+                    _httpClient.DefaultRequestHeaders.Authorization = null;
+                    return null;
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                return principal;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "JavaScript interop call failed during prerendering.");
                 return null;
             }
-
-            var principal = TryCreatePrincipal(token);
-            if (principal == null)
-            {
-                await _cookieService.DeleteCookieAsync(AuthService.TokenCookieName);
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-                return null;
-            }
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return principal;
         }
 
         private ClaimsPrincipal? TryCreatePrincipal(string token)

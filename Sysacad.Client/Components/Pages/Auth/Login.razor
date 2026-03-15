@@ -1,0 +1,66 @@
+﻿@page "/auth/login"
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+
+
+<h3>Login</h3>
+
+<EditForm Model="loginRequest" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="username">Usuario:</label>
+        <InputText id="username" @bind-Value="loginRequest.Username" class="form-control" />
+    </div>
+
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="loginRequest.Password" type="password" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+</EditForm>
+
+@code {
+    LoginRequest loginRequest = new();
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(loginRequest.Password) || string.IsNullOrEmpty(loginRequest.Username))
+            {
+                throw new InvalidOperationException("El usuario y la contraseña son obligatorios.");
+            }
+
+            LoginResponse response = await AuthService.LoginAsync(loginRequest);
+
+            if (response.Success)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                NotificationService.AddNotification(new NotificacionModel
+                {
+                    Message = response.Message,
+                    Description = "Ocurrio un error al iniciar sesión",
+                    Type = NotificationType.Error,
+                    Duration = 5
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.AddNotification(new NotificacionModel
+            {
+                Message = ex.Message,
+                Description = "Ocurrio un error al iniciar sesión",
+                Type = NotificationType.Error
+            });
+            Console.WriteLine($"Login failed: {ex.Message}");
+        }
+    }
+}

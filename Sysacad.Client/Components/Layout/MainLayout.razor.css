@@ -90,9 +90,24 @@ main {
     z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+#notification-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 9999; /* Asegura que esté encima de todo */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 90%;
+    align-items: flex-end; /* Alinea las notificaciones a la derecha */
+    pointer-events: none; /* Permite que los clics pasen a través del contenedor */
+}
+
+

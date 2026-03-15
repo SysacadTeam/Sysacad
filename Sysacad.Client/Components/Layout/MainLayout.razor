@@ -1,5 +1,15 @@
 ﻿@inherits LayoutComponentBase
-
+@inject NotificationService NotificationService
+<div id="notification-container">
+    @foreach (var notification in notifications)
+    {
+        <Notification Message="@notification.Message"
+                      Description="@notification.Description"
+                      Duration="@notification.Duration"
+                      Type="@notification.Type"
+                      OnClose="() => NotificationService.RemoveNotification(notification)" />
+    }
+</div>
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -21,3 +31,32 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+
+@code {
+    List<NotificacionModel> notifications = new();
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnNotificationAdded += async () => await InvokeAsync(UpdateNotifications);
+        base.OnInitialized();
+    }
+
+    private void UpdateNotifications()
+    {
+        notifications = NotificationService.GetNotifications().ToList();
+        StateHasChanged();
+    }
+
+    private string GetNotificationClass(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.Error => "notification-error",
+            NotificationType.Warning => "notification-warning",
+            NotificationType.Info => "notification-info",
+            NotificationType.Success => "notification-success",
+            _ => ""
+        };
+    }
+}

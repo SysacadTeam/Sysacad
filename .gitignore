@@ -361,6 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Sysacad.Server/Migrations/
 /Sysacad.Server/appsettings.Development.json
 /Sysacad.Server/appsettings.json
 /Sysacad.Client/appsettings.json

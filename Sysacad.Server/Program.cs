@@ -35,20 +35,22 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<ApiDbContext>(opt =>
 {
+    var dbSection = builder.Configuration.GetSection("Database");
     var dbHost = Environment.GetEnvironmentVariable("DB_HOST")
-                ?? builder.Configuration["Database:Host"]
+                ?? dbSection["Host"]
                 ?? throw new InvalidOperationException("Database Host no configurado.");
     var dbPort = Environment.GetEnvironmentVariable("DB_PORT")
-                ?? builder.Configuration["Database:Port"]
+                ?? dbSection["Port"]
                 ?? throw new InvalidOperationException("Database Port no configurado.");
     var dbName = Environment.GetEnvironmentVariable("DB_NAME")
-                ?? builder.Configuration["Database:Name"]
+                ?? dbSection["Name"]
                 ?? throw new InvalidOperationException("Database Name no configurado.");
     var dbUser = Environment.GetEnvironmentVariable("DB_USER")
-                ?? builder.Configuration["Database:User"]
+                ?? dbSection["User"]
                 ?? throw new InvalidOperationException("Database User no configurado.");
     var dbPass = Environment.GetEnvironmentVariable("DB_PASS")
-                ?? builder.Configuration["Database:Pass"]
+
+                ?? dbSection["Pass"]
                 ?? throw new InvalidOperationException("Database Password no configurado.");
     var connectionString = $"Server={dbHost};Port={dbPort};Database={dbName};User Id={dbUser};Password={dbPass};";
     opt.UseLazyLoadingProxies()

@@ -1,65 +1,60 @@
 ﻿using Microsoft.JSInterop;
+using Sysacad.Client.Attributes;
 using Sysacad.Client.Services.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 namespace Sysacad.Client.Services
 {
+    [RegisterService(ServiceLifetime.Scoped, typeof(ICookieService))]
     public class CookieService : ICookieService
     {
-        private readonly IJSRuntime _jsRuntime;
+        private readonly IJSRuntime _runtime;
 
-        public CookieService(IJSRuntime jsRuntime)
+        public CookieService(IJSRuntime jSRuntime)
         {
-            _jsRuntime = jsRuntime;
+            _runtime = jSRuntime;
         }
 
-        public async Task SetCookieAsync(string key, string value, DateTime expires)
+        public async Task DeleteCookieAsync(string cookieName)
         {
-            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value))
+            if (string.IsNullOrWhiteSpace(cookieName))
             {
-                throw new ArgumentException("La clave o el valor del cookie no pueden ser nulos o vacíos.");
+                throw new ArgumentException("Cookie name cannot be null or empty.", nameof(cookieName));
             }
 
-            string expiresUtc = expires.ToUniversalTime().ToString("R");
-            await _jsRuntime.InvokeVoidAsync("setCookie", key, value, expiresUtc);
+            await _runtime.InvokeVoidAsync("cookieInterop.delete", cookieName);
         }
 
-        public async Task<T?> GetCookieAsync<T>(string key)
+        public async Task<T?> GetCookieAsync<T>(string cookieName)
         {
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrWhiteSpace(cookieName))
             {
-                throw new ArgumentException("La clave del cookie no puede ser nula o vacía.");
+                throw new ArgumentException("Cookie name cannot be null or empty.", nameof(cookieName));
             }
 
-            T? cookieValue = default;
+            var cookieValue = await _runtime.InvokeAsync<string?>("cookieInterop.get", cookieName);
 
-            try
+            if (cookieValue == null)
             {
-                cookieValue = await _jsRuntime.InvokeAsync<T>("getCookie", key);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error al obtener el cookie.", ex);
+                return default;
             }
 
-            return cookieValue;
+            return (T?)Convert.ChangeType(cookieValue, typeof(T));
         }
 
-        public async Task DeleteCookieAsync(string key)
+        public async Task SetCookieAsync(string cookieName, string value, DateTime expiry)
         {
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrWhiteSpace(cookieName))
             {
-                throw new ArgumentException("La clave del cookie no puede ser nula o vacía.");
+                throw new ArgumentException("Cookie name cannot be null or empty.", nameof(cookieName));
             }
-            try
+
+            if (string.IsNullOrWhiteSpace(value))
             {
-                await _jsRuntime.InvokeVoidAsync("deleteCookie", key);
+                throw new ArgumentException("Cookie value cannot be null or empty.", nameof(value));
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error al eliminar el cookie.", ex);
-            }
+
+            string expires = expiry.ToUniversalTime().ToString("R");
+            await _runtime.InvokeVoidAsync("cookieInterop.set", cookieName, value, expires);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
+using Sysacad.Client.Attributes;
 using Sysacad.Client.Services.Interfaces;
 using Sysacad.Shared.Auth;
 using System.IdentityModel.Tokens.Jwt;
@@ -9,6 +10,7 @@ using LoginRequest = Sysacad.Shared.Auth.LoginRequest;
 
 namespace Sysacad.Client.Services
 {
+    [RegisterService(ServiceLifetime.Scoped, typeof(IAuthService))]
     public class AuthService : IAuthService
     {
         internal const string TokenCookieName = "sysacad_access_token";
