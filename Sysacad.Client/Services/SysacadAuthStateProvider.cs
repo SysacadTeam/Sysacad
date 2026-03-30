@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.Logging;
-using Sysacad.Client.Services.Interfaces;
-using System;
+﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
+using Sysacad.Client.Services.Interfaces;
 
 namespace Sysacad.Client.Services
 {
@@ -79,9 +79,9 @@ namespace Sysacad.Client.Services
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 return principal;
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
-                _logger.LogWarning(ex, "JavaScript interop call failed during prerendering.");
+                // During prerendering JS interop is not available — return anonymous
                 return null;
             }
         }

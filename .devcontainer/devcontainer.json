@@ -1,0 +1,68 @@
+{
+  "name": "Sysacad",
+  "image": "mcr.microsoft.com/dotnet/sdk:10.0",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "dotnet.defaultSolution": "Sysacad.slnx",
+        "editor.formatOnSave": true,
+        "editor.bracketPairColorization.enabled": true,
+        "omnisharp.enableRoslynAnalyzers": true
+      },
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        //"ms-dotnettools.dotnet-interactive-vscode",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "github.copilot",
+        "github.copilot-chat",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "humao.rest-client",
+        "EditorConfig.EditorConfig"
+      ]
+    }
+  },
+  "forwardPorts": [
+    7083,
+    7231,
+    5000,
+    5156,
+    5540
+  ],
+  "portsAttributes": {
+    "7083": {
+      "label": "Sysacad Server (HTTPS)"
+    },
+    "7231": {
+      "label": "Sysacad Client (HTTPS)"
+    },
+    "5000": {
+      "label": "Sysacad Server (HTTP)"
+    },
+    "5156": {
+      "label": "Sysacad Client (HTTP)"
+    },
+    "5540": {
+      "label": "PostgreSQL"
+    }
+  },
+  "postCreateCommand": "install -m 755 .devcontainer/bin/gcr /usr/local/bin/gcr && dotnet dev-certs https --clean 2>/dev/null || true && dotnet dev-certs https --trust && dotnet restore Sysacad.slnx && dotnet tool restore || true",
+  "postStartCommand": "sudo chown -R vscode:vscode . 2>/dev/null || true",
+  "remoteEnv": {
+    "SSL_CERT_DIR": "/home/vscode/.aspnet/dev-certs/trust:/usr/lib/ssl/certs",
+    "ASPNETCORE_ENVIRONMENT": "Development"
+  },
+  "remoteUser": "vscode"
+}

@@ -366,3 +366,7 @@ FodyWeavers.xsd
 /Sysacad.Server/appsettings.json
 /Sysacad.Client/appsettings.json
 /Sysacad.Client/appsettings.Development.json
+/Sysacad.Client/bin/
+/Sysacad.Client/obj/
+/Sysacad.Server/bin/
+/Sysacad.Server/obj/
