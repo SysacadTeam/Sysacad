@@ -3,6 +3,9 @@
 ###############################################################################
 * text=auto
 
+# Shell scripts must always use LF (fixes CRLF breakage on Windows checkout)
+.devcontainer/bin/* text eol=lf
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #
@@ -61,3 +64,4 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+.devcontainer/bin/* text eol=lf
