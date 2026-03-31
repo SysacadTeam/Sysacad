@@ -1,6 +1,8 @@
 {
   "name": "Sysacad",
-  "image": "mcr.microsoft.com/dotnet/sdk:10.0",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/Sysacad VS Code",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
@@ -38,8 +40,7 @@
     7083,
     7231,
     5000,
-    5156,
-    5540
+    5156
   ],
   "portsAttributes": {
     "7083": {
@@ -53,16 +54,18 @@
     },
     "5156": {
       "label": "Sysacad Client (HTTP)"
-    },
-    "5540": {
-      "label": "PostgreSQL"
     }
   },
-  "postCreateCommand": "install -m 755 .devcontainer/bin/gcr /usr/local/bin/gcr && dotnet dev-certs https --clean 2>/dev/null || true && dotnet dev-certs https --trust && dotnet restore Sysacad.slnx && dotnet tool restore || true",
-  "postStartCommand": "sudo chown -R vscode:vscode . 2>/dev/null || true",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y postgresql-client && sudo install -m 755 .devcontainer/bin/gcr /usr/local/bin/gcr && sudo install -m 755 .devcontainer/bin/dev /usr/local/bin/dev && dotnet restore Sysacad.slnx && dotnet tool restore || true",
+  "postStartCommand": "sudo chown -R vscode:vscode . 2>/dev/null || true && dev start",
   "remoteEnv": {
     "SSL_CERT_DIR": "/home/vscode/.aspnet/dev-certs/trust:/usr/lib/ssl/certs",
-    "ASPNETCORE_ENVIRONMENT": "Development"
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "DB_HOST": "db",
+    "DB_PORT": "5432",
+    "DB_NAME": "sysacad",
+    "DB_USER": "postgres",
+    "DB_PASS": "sysacad"
   },
   "remoteUser": "vscode"
 }

@@ -370,3 +370,8 @@ FodyWeavers.xsd
 /Sysacad.Client/obj/
 /Sysacad.Server/bin/
 /Sysacad.Server/obj/
+.devcontainer/dumps/
+.devcontainer/certs/*
+!.devcontainer/certs/.gitkeep
+.dev/*
+!.dev/.gitkeep

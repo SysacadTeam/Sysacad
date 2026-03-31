@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +11,6 @@ using Sysacad.Server.Data;
 using Sysacad.Server.Data.Extensions;
 using Sysacad.Server.Middleware;
 using Sysacad.Server.Services;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using System.Text.Json.Serialization;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -52,7 +52,8 @@ builder.Services.AddDbContext<ApiDbContext>(opt =>
 
                 ?? dbSection["Pass"]
                 ?? throw new InvalidOperationException("Database Password no configurado.");
-    var connectionString = $"Server={dbHost};Port={dbPort};Database={dbName};User Id={dbUser};Password={dbPass};";
+    var sslMode = builder.Environment.IsDevelopment() ? "SSL Mode=Disable;" : "";
+    var connectionString = $"Server={dbHost};Port={dbPort};Database={dbName};User Id={dbUser};Password={dbPass};{sslMode}";
     opt.UseLazyLoadingProxies()
        .UseNpgsql(connectionString);
 
@@ -176,7 +177,10 @@ app.MapGet("/", () => Results.Redirect("/docs", permanent: false))
 
 app.UseCors();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseJwtRefresh();

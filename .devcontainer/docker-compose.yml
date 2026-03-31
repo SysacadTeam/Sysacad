@@ -1,0 +1,35 @@
+services:
+  app:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    volumes:
+      - ..:/workspaces/Sysacad VS Code:cached
+    command: sleep infinity
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: sysacad
+      DB_USER: postgres
+      DB_PASS: sysacad
+
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sysacad
+      POSTGRES_DB: sysacad
+    ports:
+      - "5540:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^sudo install -m 755 .*\/dev \/usr\/local\/bin\/dev$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

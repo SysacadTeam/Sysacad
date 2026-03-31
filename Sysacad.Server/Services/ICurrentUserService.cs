@@ -5,5 +5,6 @@
         int? GetCurrentUserId();
         Task<Sysacad.Server.Data.Entities.Usuario?> GetCurrentUserAsync();
         bool IsAuthenticated();
+        Task<bool> HasRoleAsync(string roleName);
     }
 }

@@ -21,8 +21,8 @@ namespace Sysacad.Client.Services
                 throw new ArgumentException("Cookie name cannot be null or empty.", nameof(cookieName));
             }
 
-            await _runtime.InvokeVoidAsync("cookieInterop.delete", cookieName);
-        }
+                await _runtime.InvokeVoidAsync("cookieInterop.delete", cookieName);
+            }
 
         public async Task<T?> GetCookieAsync<T>(string cookieName)
         {
@@ -54,7 +54,7 @@ namespace Sysacad.Client.Services
             }
 
             string expires = expiry.ToUniversalTime().ToString("R");
-            await _runtime.InvokeVoidAsync("cookieInterop.set", cookieName, value, expires);
-        }
+                await _runtime.InvokeVoidAsync("cookieInterop.set", cookieName, value, expires);
+            }
     }
 }

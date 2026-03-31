@@ -1,8 +1,8 @@
-﻿using Sysacad.Server.Data;
+﻿using System.Security.Claims;
+using Sysacad.Server.Data;
 using Sysacad.Server.Data.Entities;
 using Sysacad.Server.Data.Repositories;
 using Sysacad.Server.Services;
-using System.Security.Claims;
 
 namespace Sysacad.Server.Services
 {
@@ -82,6 +82,27 @@ namespace Sysacad.Server.Services
         public bool IsAuthenticated()
         {
             return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
+        }
+
+        public async Task<bool> HasRoleAsync(string roleCode)
+        {
+            var usuario = await GetCurrentUserAsync();
+
+            if (!(usuario is Usuario))
+            {
+                return false;
+            }
+
+            var isAdmin = usuario.Perfiles?.SelectMany(p => p.Permisos ?? Enumerable.Empty<Permiso>())
+                            .Any(permiso => permiso.Codigo == "admin") ?? false;
+
+            if (isAdmin)
+            {
+                return true;
+            }
+
+            return usuario.Perfiles?.SelectMany(p => p.Permisos ?? Enumerable.Empty<Permiso>())
+                    .Any(permiso => permiso.Codigo == roleCode) ?? false;
         }
     }
 }
