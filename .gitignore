@@ -373,5 +373,6 @@ FodyWeavers.xsd
 .devcontainer/dumps/
 .devcontainer/certs/*
 !.devcontainer/certs/.gitkeep
+!.devcontainer/bin/
 .dev/*
 !.dev/.gitkeep
