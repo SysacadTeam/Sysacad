@@ -3,16 +3,19 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+WORKSPACE_DIR="${WORKSPACE_DIR:-$(git -C "${PWD}" rev-parse --show-toplevel 2>/dev/null || true)}"
+if [[ -z "${WORKSPACE_DIR}" ]]; then
+    WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+fi
 
 DB_HOST="${DB_HOST:-db}"
 DB_PORT="${DB_PORT:-5432}"
 DB_NAME="${DB_NAME:-sysacad}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASS="${DB_PASS:-sysacad}"
+DB_VOLUME_NAME="${DB_VOLUME_NAME:-sysacad_dev_pgdata}"
 CERTS_DIR="${WORKSPACE_DIR}/.devcontainer/certs"
 PROJECT_DIR="${WORKSPACE_DIR}/Sysacad.Server"
-DUMP_DIR="${WORKSPACE_DIR}/.devcontainer/dumps"
 
 wait_for_db() {
     local max_retries=30
@@ -32,8 +35,39 @@ wait_for_db() {
     done
 }
 
+ensure_db_exists() {
+    local db_exists
+    db_exists=$(PGPASSWORD="${DB_PASS}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" postgres -tAc \
+        "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" 2>/dev/null || true)
+
+    if [[ "${db_exists}" != "1" ]]; then
+        echo "🛠️  Creating local DB '${DB_NAME}'..."
+        PGPASSWORD="${DB_PASS}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" postgres \
+            -c "CREATE DATABASE \"${DB_NAME}\";"
+    fi
+}
+
+volume_exists_by_name() {
+    docker volume inspect "${DB_VOLUME_NAME}" >/dev/null 2>&1
+}
+
+reset_local_db() {
+    PGPASSWORD="${DB_PASS}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" postgres \
+        -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();" \
+        -c "DROP DATABASE IF EXISTS \"${DB_NAME}\";" \
+        -c "CREATE DATABASE \"${DB_NAME}\";"
+}
+
 cmd_start() {
     wait_for_db
+    ensure_db_exists
+
+    if volume_exists_by_name; then
+        echo "✅ Docker volume '${DB_VOLUME_NAME}' detected. Reusing persisted local DB."
+    else
+        echo "⬇️  Docker volume '${DB_VOLUME_NAME}' not found. Pulling production data..."
+        cmd_dump
+    fi
 
     if [ -d "$PROJECT_DIR/Migrations" ] && [ "$(ls -A "$PROJECT_DIR/Migrations" 2>/dev/null)" ]; then
         echo "🔄 Applying EF Core migrations..."
@@ -52,9 +86,16 @@ cmd_dump() {
         source "$prod_env"
     fi
 
-    local ssl_ca="${SSL_CA:-}"
-    local ssl_crt="${SSL_CRT:-}"
-    local ssl_key="${SSL_KEY:-}"
+    local ssl_ca="${SSL_CA:-${CERTS_DIR}/ca.pem}"
+    local ssl_crt="${SSL_CRT:-${CERTS_DIR}/client.crt}"
+    local ssl_key="${SSL_KEY:-${CERTS_DIR}/client.key}"
+
+    for required in PROD_HOST PROD_PORT PROD_DB PROD_USER PROD_PASS; do
+        if [[ -z "${!required:-}" ]]; then
+            echo "❌ Missing ${required} in .dev/prod.env"
+            return 1
+        fi
+    done
 
     # Validate cert files
     for f in "$ssl_ca" "$ssl_crt" "$ssl_key"; do
@@ -74,27 +115,56 @@ cmd_dump() {
     cp "$ssl_ca" "$tmp_ca" && cp "$ssl_crt" "$tmp_crt" && cp "$ssl_key" "$tmp_key"
     chmod 600 "$tmp_key"
 
+    local db_container
+    db_container=$(docker ps --format '{{.Names}}' | grep -E '(^db$|db-[0-9]+$)' | head -n 1 || true)
+    if [[ -z "${db_container}" ]]; then
+        echo "❌ Could not find running PostgreSQL container (db)."
+        return 1
+    fi
+
+    local db_network
+    db_network=$(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{println $k}}{{end}}' "${db_container}" | head -n 1)
+    if [[ -z "${db_network}" ]]; then
+        echo "❌ Could not resolve Docker network for '${db_container}'."
+        return 1
+    fi
+
     wait_for_db
 
-    echo "🗑️  Dropeando DB local '${DB_NAME}'..."
-    PGPASSWORD="${DB_PASS}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" postgres \
-        -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();" \
-        -c "DROP DATABASE IF EXISTS \"${DB_NAME}\";" \
-        -c "CREATE DATABASE \"${DB_NAME}\";"
+    echo "🗑️  Fully wiping local DB '${DB_NAME}' before restore..."
+    reset_local_db
 
-    echo "📦 Dumping production '${PROD_DB}' y restaurando en local '${DB_NAME}'..."
-    (
-        export PGSSLMODE=verify-full
-        export PGSSLROOTCERT="$tmp_ca"
-        export PGSSLCERT="$tmp_crt"
-        export PGSSLKEY="$tmp_key"
-        PGPASSWORD="${PROD_PASS}" pg_dump \
-            -h "${PROD_HOST}" -p "${PROD_PORT}" -U "${PROD_USER}" \
-            -Fc --no-owner --no-acl "${PROD_DB}"
-    ) | PGPASSWORD="${DB_PASS}" pg_restore \
-        -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" \
-        --no-owner --no-acl -d "${DB_NAME}"
-    echo "✅ DB local actualizada con datos de producción."
+    echo "📦 Dumping production '${PROD_DB}' and restoring directly into local '${DB_NAME}'..."
+    docker run --rm \
+        --network "${db_network}" \
+        -e PROD_HOST="${PROD_HOST}" \
+        -e PROD_PORT="${PROD_PORT}" \
+        -e PROD_DB="${PROD_DB}" \
+        -e PROD_USER="${PROD_USER}" \
+        -e PROD_PASS="${PROD_PASS}" \
+        -e DB_HOST="${DB_HOST}" \
+        -e DB_PORT="${DB_PORT}" \
+        -e DB_NAME="${DB_NAME}" \
+        -e DB_USER="${DB_USER}" \
+        -e DB_PASS="${DB_PASS}" \
+        -v "${tmp_ca}:/certs/ca.pem:ro" \
+        -v "${tmp_crt}:/certs/client.crt:ro" \
+        -v "${tmp_key}:/certs/client.key:ro" \
+        postgres:17 bash -euc '
+            PGPASSWORD="${PROD_PASS}" \
+            PGSSLMODE=verify-full \
+            PGSSLROOTCERT=/certs/ca.pem \
+            PGSSLCERT=/certs/client.crt \
+            PGSSLKEY=/certs/client.key \
+            pg_dump \
+                -h "${PROD_HOST}" -p "${PROD_PORT}" -U "${PROD_USER}" \
+                -Fc --no-owner --no-acl "${PROD_DB}" \
+            | PGPASSWORD="${DB_PASS}" PGSSLMODE=disable pg_restore \
+                -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" \
+                --clean --if-exists --no-owner --no-acl -d "${DB_NAME}"
+        '
+
+    echo "✅ Local DB updated from production in persistent Docker volume."
 }
 
 cmd_restart() {
@@ -111,9 +181,9 @@ dev — Sysacad development helper
 Usage: dev <command>
 
 Commands:
-  start     Wait for PostgreSQL and apply EF Core migrations
-  dump      Dump the database to .devcontainer/dumps/
-  restart   Restart the PostgreSQL container
+    start     Reuse local DB when volume name exists, otherwise fetch from production
+    dump      Fully wipe local DB and restore from production (direct restore)
+    restart   Restart the PostgreSQL container
 EOF
 }
 

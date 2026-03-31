@@ -2,7 +2,7 @@ services:
   app:
     image: mcr.microsoft.com/dotnet/sdk:10.0
     volumes:
-      - ..:/workspaces/Sysacad VS Code:cached
+      - ..:/workspaces/Sysacad:cached
     command: sleep infinity
     depends_on:
       db:
@@ -33,3 +33,4 @@ services:
 
 volumes:
   pgdata:
+    name: sysacad_dev_pgdata

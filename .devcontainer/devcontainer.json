@@ -2,7 +2,7 @@
   "name": "Sysacad",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/workspaces/Sysacad VS Code",
+  "workspaceFolder": "/workspaces/Sysacad",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
