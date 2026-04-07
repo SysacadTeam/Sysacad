@@ -56,9 +56,10 @@
       "label": "Sysacad Client (HTTP)"
     }
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y postgresql-client && sudo install -m 755 .devcontainer/bin/gcr /usr/local/bin/gcr && sudo install -m 755 .devcontainer/bin/dev /usr/local/bin/dev && dotnet restore Sysacad.slnx && dotnet tool restore || true",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y postgresql-client && sudo install -m 755 .devcontainer/bin/gcr /usr/local/bin/gcr && sudo install -m 755 .devcontainer/bin/dev /usr/local/bin/dev && dotnet restore Sysacad.slnx && dotnet tool restore || true && dotnet tool install --global dotnet-ef --version 10.0.5 && echo 'export PATH=\"$PATH:$HOME/.dotnet/tools\"' >> ~/.zshrc && echo 'export PATH=\"$PATH:$HOME/.dotnet/tools\"' >> ~/.bashrc",
   "postStartCommand": "sudo chown -R vscode:vscode . 2>/dev/null || true && dev start",
   "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/.dotnet/tools",
     "SSL_CERT_DIR": "/home/vscode/.aspnet/dev-certs/trust:/usr/lib/ssl/certs",
     "ASPNETCORE_ENVIRONMENT": "Development",
     "DB_HOST": "db",

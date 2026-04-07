@@ -146,11 +146,13 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Testing database connection...");
         if (await dbContext.Database.CanConnectAsync())
         {
-            logger.LogInformation("Database connection successful!");
+            logger.LogInformation("Database connection successful. Applying migrations...");
+            await dbContext.Database.MigrateAsync();
+            logger.LogInformation("Migrations applied successfully.");
         }
         else
         {
-            logger.LogWarning("Could not connect to database. Please check your configuration in Configuration/ENV_SETUP.cs");
+            logger.LogWarning("Could not connect to database. Please check your configuration.");
         }
     }
     catch (Exception ex)
@@ -159,6 +161,8 @@ using (var scope = app.Services.CreateScope())
         logger.LogWarning("The application will continue, but database operations will fail until the connection is fixed.");
     }
 }
+
+app.UseOperationCanceled();
 
 app.UseSwagger();
 
@@ -188,4 +192,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

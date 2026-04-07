@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sysacad.Server.Data.Entities;
+using Sysacad.Server.Data.Seeds;
 using System.Reflection;
 
 namespace Sysacad.Server.Data
@@ -14,6 +15,7 @@ namespace Sysacad.Server.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Perfil> Perfiles { get; set; }
         public DbSet<Permiso> Permisos { get; set; }
+        public DbSet<Persona> Personas { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,6 +23,8 @@ namespace Sysacad.Server.Data
             base.OnModelCreating(modelBuilder);
 
             ConfigureAuditoryEntities(modelBuilder);
+
+            Seed(modelBuilder);
 
             modelBuilder.Entity<Usuario>(entity =>
             {
@@ -30,6 +34,12 @@ namespace Sysacad.Server.Data
                 entity.Property(e => e.Email).HasMaxLength(100);
                 entity.Property(e => e.BorradoLogico).HasDefaultValue(false);
                 entity.HasIndex(e => e.Username).IsUnique();
+
+                entity.HasOne(u => u.Persona)
+                    .WithOne()
+                    .HasForeignKey<Usuario>(u => u.PersonaId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .IsRequired(false);
             });
 
             modelBuilder.Entity<Perfil>(entity =>
@@ -38,18 +48,6 @@ namespace Sysacad.Server.Data
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Descripcion).HasMaxLength(200);
                 entity.Property(e => e.BorradoLogico).HasDefaultValue(false);
-
-                entity.HasMany(p => p.Usuarios)
-                    .WithMany(u => u.Perfiles)
-                    .UsingEntity<Dictionary<string, object>>(
-                        "UsuarioPerfil",
-                        j => j.HasOne<Usuario>().WithMany().HasForeignKey("UsuarioId").OnDelete(DeleteBehavior.Cascade),
-                        j => j.HasOne<Perfil>().WithMany().HasForeignKey("PerfilId").OnDelete(DeleteBehavior.Cascade),
-                        j =>
-                        {
-                            j.HasKey("UsuarioId", "PerfilId");
-                            j.ToTable("UsuarioPerfil");
-                        });
             });
 
             modelBuilder.Entity<Permiso>(entity =>
@@ -59,25 +57,34 @@ namespace Sysacad.Server.Data
                 entity.Property(e => e.Descripcion).HasMaxLength(200);
                 entity.Property(e => e.BorradoLogico).HasDefaultValue(false);
                 entity.HasIndex(e => e.Codigo).IsUnique();
-
-                entity.HasMany(p => p.Perfiles)
-                    .WithMany(u => u.Permisos)
-                    .UsingEntity<Dictionary<string, object>>(
-                        "UsuarioPermiso",
-                        j => j.HasOne<Perfil>().WithMany().HasForeignKey("PerfilId").OnDelete(DeleteBehavior.Cascade),
-                        j => j.HasOne<Permiso>().WithMany().HasForeignKey("PermisoId").OnDelete(DeleteBehavior.Cascade),
-                        j =>
-                        {
-                            j.HasKey("PerfilId", "PermisoId");
-                            j.ToTable("PerfilPermiso");
-                        });
             });
+
+            modelBuilder.Entity<Persona>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Nombres).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Apellidos).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Documento).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => e.Documento).IsUnique();
+                entity.Property(e => e.Telefono).HasMaxLength(20);
+                entity.Property(e => e.Email).HasMaxLength(100);
+                entity.Property(e => e.Domicilio).HasMaxLength(200);
+                entity.Property(e => e.BorradoLogico).HasDefaultValue(false);
+            });
+        }
+
+        public static void Seed(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new PermisosSeed());
+            modelBuilder.ApplyConfiguration(new PerfilesSeed());
+            modelBuilder.ApplyConfiguration(new PersonasSeed());
+            modelBuilder.ApplyConfiguration(new UsuariosSeed());
         }
 
         /// <summary>
         /// Configura automáticamente las relaciones de auditoría para todas las entidades que implementan IAudithory
         /// </summary>
-        private void ConfigureAuditoryEntities(ModelBuilder modelBuilder)
+        private static void ConfigureAuditoryEntities(ModelBuilder modelBuilder)
         {
             var auditoryEntityTypes = Assembly.GetExecutingAssembly()
                 .GetTypes()

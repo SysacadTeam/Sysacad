@@ -13,7 +13,7 @@ namespace Sysacad.Server.Data.Entities
         public required string PasswordHash { get; set; }
         public string Email { get; set; } = string.Empty;
         public DateTime LastLogin { get; set; } = DateTime.UtcNow;
-        public virtual required Usuario CreatedBy { get; set; }
+        public virtual Usuario CreatedBy { get; set; } = null!;
         public required int CreatedById { get; set; }
         public required DateTime CreatedAt { get; set; }
         public virtual Usuario? UpdatedBy { get; set; } = null;
@@ -23,5 +23,7 @@ namespace Sysacad.Server.Data.Entities
         public int? DeletedById { get; set; } = null;
         public DateTime? DeletedAt { get; set; } = null;
         public virtual List<Perfil>? Perfiles { get; set; } = null;
+        public virtual Persona? Persona { get; set; } = null;
+        public int? PersonaId { get; set; }
     }
 }

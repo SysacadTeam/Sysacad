@@ -90,7 +90,7 @@ namespace Sysacad.Server.Services
             }
         }
 
-        private bool IsPasswordHashed(string password)
+        private static bool IsPasswordHashed(string password)
         {
             if (string.IsNullOrEmpty(password))
                 return false;

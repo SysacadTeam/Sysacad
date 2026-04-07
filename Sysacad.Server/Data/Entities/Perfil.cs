@@ -4,7 +4,7 @@ namespace Sysacad.Server.Data.Entities
     {
         public string Nombre { get; set; } = null!;
         public string Descripcion { get; set; } = null!;
-        public virtual required Usuario CreatedBy { get; set; }
+        public virtual Usuario CreatedBy { get; set; } = null!;
         public int CreatedById { get; set; }
         public DateTime CreatedAt { get; set; }
         public virtual Usuario? UpdatedBy { get; set; }

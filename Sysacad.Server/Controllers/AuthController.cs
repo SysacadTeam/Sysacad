@@ -119,7 +119,7 @@ namespace Sysacad.Server.Controllers
         /// <response code="401">Token inválido o expirado</response>
         [HttpGet("Validate")]
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType<object>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult ValidateToken()
         {

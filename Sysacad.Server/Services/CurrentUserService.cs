@@ -84,7 +84,7 @@ namespace Sysacad.Server.Services
             return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
         }
 
-        public async Task<bool> HasRoleAsync(string roleCode)
+        public async Task<bool> HasRoleAsync(string roleName)
         {
             var usuario = await GetCurrentUserAsync();
 
@@ -102,7 +102,7 @@ namespace Sysacad.Server.Services
             }
 
             return usuario.Perfiles?.SelectMany(p => p.Permisos ?? Enumerable.Empty<Permiso>())
-                    .Any(permiso => permiso.Codigo == roleCode) ?? false;
+                    .Any(permiso => permiso.Codigo == roleName) ?? false;
         }
     }
 }
